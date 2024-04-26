@@ -6,6 +6,7 @@ import os
 # 源码 line 480 /home/zeus/miniconda3/envs/cloudspace/lib/python3.10/site-packages/transformers/tokenization_utils_fast.py
 os.environ["HF_HOME"] = "model/"
 
+# 1 使用llamaindex来启动vllm
 # 源码 /home/zeus/miniconda3/envs/cloudspace/lib/python3.10/site-packages/llama_index/llms/vllm/base.py
 # llm = Vllm(
 #     model="model/Alibaba/Qwen1.5-14B-Chat-AWQ", # 本地或HF模型
@@ -20,6 +21,7 @@ os.environ["HF_HOME"] = "model/"
 # output = llm.chat(chat_history)  
 # print(output)
 
+# 2 使用已启动的vllm服务 USE: Start vLLM first
 # 源码 /home/zeus/miniconda3/envs/cloudspace/lib/python3.10/site-packages/llama_index/llms/openai/base.py
 llm = OpenAILike(
     model="Qwen-14-4B",
@@ -37,7 +39,6 @@ output = llm.chat(chat_history)
 print(output)
 
 
-
 from llama_index.core import Settings, SimpleDirectoryReader, VectorStoreIndex
 Settings.llm = llm # Ollama(model="llama2", request_timeout=120.0)
 Settings.embed_model = "local" # HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
@@ -51,12 +52,12 @@ index = VectorStoreIndex.from_documents(
 )
 engine = index.as_query_engine(llm=llm)
 output = engine.query("What do I like to drink?")
-print("engine output: ", output)
+print("as_query_engine output: ", output)
 
 
 # Everything from above, till and including the creation of the index.
 engine = index.as_chat_engine()
 output = engine.chat("What do I like to drink?")
-print(output) # "You enjoy drinking coffee."
+print("as_chat_engine output: ", output) # "You enjoy drinking coffee."
 output = engine.chat("How do I make it myself?")
-print(output) # "You brew coffee with a Aeropress."
+print("as_chat_engine output: ", output) # "You brew coffee with a Aeropress."
