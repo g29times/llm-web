@@ -3,8 +3,15 @@ import requests
 import json
 import os
 
-OLLAMA_HOST = os.environ.get('OLLAMA_HOST', 'http://localhost:11434/api/generate')
-VLLM_HOST = os.environ.get('VLLM_HOST', 'http://localhost:8000/v1/chat/completions')
+# OLLAMA_HOST = os.environ.get('OLLAMA_HOST', 'http://localhost:11434/api/generate')
+# VLLM_HOST = os.environ.get('VLLM_HOST', 'http://localhost:8000/v1/chat/completions')
+LOCAL_OLLAMA = "http://localhost:11434"
+
+LOCAL_VLLM = "http://localhost:8000"
+REMOTE_VLLM = "https://8000-01hr72c020jtkv3tm9xcnwztye.cloudspaces.litng.ai"
+
+OLLAMA_HOST = os.environ.get('OLLAMA_HOST', LOCAL_OLLAMA + '/api/generate')
+VLLM_HOST = os.environ.get('VLLM_HOST', REMOTE_VLLM + '/v1/chat/completions')
 BASE_URL = VLLM_HOST
 
 # Ollama: 
@@ -92,13 +99,13 @@ def chat_with_model(model, user_input, system=None, context=None):
     data = {
         "model": model,
         "messages": [
-            {"role": "system", "content": system},
+            { "role": "system", "content": system },
             { "role": "user", "content": user_input }
         ],
         "max_tokens": 1024,
         "temperature": 0.7,
         "top_p": 0.9,
-        "stream": False
+        "stream": False # TODO 流式
     }
 
     # 将数据转换为 JSON 格式
@@ -108,11 +115,17 @@ def chat_with_model(model, user_input, system=None, context=None):
     print("url", url)
 
     # 发送 POST 请求
-    response = requests.post(url, data=json_data, headers={'Content-Type': 'application/json'})
+    try: # debug用
+        response = requests.post(url, data=json_data, headers={'Content-Type': 'application/json'})
+    except requests.ConnectionError as e:
+        response.text = {"choices": [{"message": {"content": "1.A; 2.B; 3.C"}}]}
 
     # 输出响应内容
     response_json = response.text
     print("Response: ", response_json)
+    # debug用
+    if(response.status_code != 200):
+        response_json = json.dumps({"choices": [{"message": {"content": "1.A; 2.B; 3.C"}}]})
 
     # 解析 JSON 数据
     data = json.loads(response_json)

@@ -25,7 +25,8 @@ os.environ["HF_HOME"] = "model/"
 # 源码 /home/zeus/miniconda3/envs/cloudspace/lib/python3.10/site-packages/llama_index/llms/openai/base.py
 llm = OpenAILike(
     model="Qwen-14-4B",
-    api_base="http://localhost:8000/v1/",
+    # api_base="http://localhost:8000/v1/",
+    api_base="https://8000-01hr72c020jtkv3tm9xcnwztye.cloudspaces.litng.ai/v1/",
     timeout=60,  # secs
     api_key="loremIpsum",
     is_chat_model=True,
@@ -43,7 +44,10 @@ print(output)
 
 from llama_index.core import Settings, SimpleDirectoryReader, VectorStoreIndex
 Settings.llm = llm # Ollama(model="llama2", request_timeout=120.0)
-Settings.embed_model = "local" # HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
+# 在主机上
+# Settings.embed_model = "local" # HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
+# TODO 在客户端上 需要下载HuggingFaceEmbedding
+Settings.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
 Settings.num_output = 512
 Settings.context_window = 4096
 documents = SimpleDirectoryReader(
@@ -56,13 +60,13 @@ engine = index.as_query_engine(llm=llm)
 output = engine.query("What do I like to drink?")
 print("query answer: ", output)
 
-
+# TODO 完善多伦对话
 # Everything from above, till and including the creation of the index.
 engine = index.as_chat_engine()
-output = engine.chat("What is the game about?") # "What is the game about?"
+output = engine.chat("What do I like to drink?") # "What is the game about?"
 print("as_chat_engine output: ", output) # "You enjoy drinking coffee."
 
-output = engine.chat("How to start the game?") # "How do I make it myself?"
+output = engine.chat("How do I make it myself?") # "How to start the game?"
 print("as_chat_engine output: ", output) # "You brew coffee with a Aeropress."
 
 # debug
